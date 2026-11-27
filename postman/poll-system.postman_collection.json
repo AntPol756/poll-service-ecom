@@ -1,0 +1,1481 @@
+{
+  "info": {
+    "name": "Poll System",
+    "description": "End-to-end test of the Poll System (User Service + Poll Service). Run the whole collection with the Collection Runner, in order, while `docker compose up` is running.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Users - CRUD",
+      "item": [
+        {
+          "name": "Create user A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User created -> 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"New user is NOT registered yet\", () => pm.expect(body.is_registered).to.eql(false));",
+                  "pm.test(\"Has unique id and joining date\", () => { pm.expect(body.id).to.be.a(\"number\"); pm.expect(body.joining_date).to.include(\"2023-05-10\"); });",
+                  "pm.collectionVariables.set(\"user_a_id\", body.id);",
+                  "pm.collectionVariables.set(\"user_a_email\", body.email);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{user_url}}/users",
+              "host": [
+                "{{user_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Dana\",\n  \"last_name\": \"Levi\",\n  \"email\": \"{{$randomEmail}}\",\n  \"age\": 28,\n  \"address\": \"Haifa\",\n  \"joining_date\": \"2023-05-10T00:00:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get user A info",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get user -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"All user fields returned\", () => [\"id\",\"first_name\",\"last_name\",\"email\",\"age\",\"address\",\"joining_date\",\"is_registered\"].forEach(f => pm.expect(body).to.have.property(f)));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{user_url}}/users/{{user_a_id}}",
+              "host": [
+                "{{user_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_a_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update user A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User updated -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Address changed\", () => pm.expect(body.address).to.eql(\"Tel Aviv\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{user_url}}/users/{{user_a_id}}",
+              "host": [
+                "{{user_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_a_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address\": \"Tel Aviv\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get all users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"List users -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns a list\", () => pm.expect(body).to.be.an(\"array\").that.is.not.empty);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{user_url}}/users",
+              "host": [
+                "{{user_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create user with same email (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Duplicate email rejected -> 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{user_url}}/users",
+              "host": [
+                "{{user_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Copy\",\n  \"last_name\": \"Cat\",\n  \"email\": \"{{user_a_email}}\",\n  \"age\": 30,\n  \"address\": \"Eilat\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create user with invalid data (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Validation error -> 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{user_url}}/users",
+              "host": [
+                "{{user_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"\",\n  \"last_name\": \"X\",\n  \"email\": \"not-an-email\",\n  \"age\": -5,\n  \"address\": \"Nowhere\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Questions - CRUD",
+      "item": [
+        {
+          "name": "Get poll questions (seeded)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get questions -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Default questions exist\", () => pm.expect(body.length).to.be.at.least(2));",
+                  "pm.test(\"Each question has title + 4 text options\", () => body.forEach(q => [\"title\",\"option_1\",\"option_2\",\"option_3\",\"option_4\"].forEach(f => pm.expect(q[f]).to.be.a(\"string\"))));",
+                  "pm.collectionVariables.set(\"seed_question_id\", body[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{poll_url}}/questions",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "questions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create question",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Question created -> 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Has unique id\", () => pm.expect(body.id).to.be.a(\"number\"));",
+                  "pm.collectionVariables.set(\"question_id\", body.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{poll_url}}/questions",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "questions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Where is your preferred place to travel? (Postman test)\",\n  \"option_1\": \"USA\",\n  \"option_2\": \"France\",\n  \"option_3\": \"South America\",\n  \"option_4\": \"Thailand\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get question info",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get question -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Option 2 is France\", () => pm.expect(body.option_2).to.eql(\"France\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{poll_url}}/questions/{{question_id}}",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "questions",
+                "{{question_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update question (no answers yet - allowed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Question updated -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Title changed\", () => pm.expect(body.title).to.eql(\"Where is your preferred place to travel?\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{poll_url}}/questions/{{question_id}}",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "questions",
+                "{{question_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Where is your preferred place to travel?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create question with missing option (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Validation error -> 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{poll_url}}/questions",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "questions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Only three options?\",\n  \"option_1\": \"A\",\n  \"option_2\": \"B\",\n  \"option_3\": \"C\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Answers - rules",
+      "item": [
+        {
+          "name": "Answer BEFORE register (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Unregistered user blocked -> 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{poll_url}}/answers",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "answers"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{user_a_id}},\n  \"question_id\": {{question_id}},\n  \"selected_option\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Register user A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Register -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Now registered\", () => pm.expect(body.is_registered).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{user_url}}/users/{{user_a_id}}/register",
+              "host": [
+                "{{user_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_a_id}}",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Answer question",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Answer saved -> 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Choice saved as text too\", () => pm.expect(body.selected_text).to.eql(\"France\"));",
+                  "pm.collectionVariables.set(\"answer_id\", body.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{poll_url}}/answers",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "answers"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{user_a_id}},\n  \"question_id\": {{question_id}},\n  \"selected_option\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Answer same question again (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Only one answer per question -> 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{poll_url}}/answers",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "answers"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{user_a_id}},\n  \"question_id\": {{question_id}},\n  \"selected_option\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Answer with option 5 (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Only options 1-4 -> 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{poll_url}}/answers",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "answers"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{user_a_id}},\n  \"question_id\": {{seed_question_id}},\n  \"selected_option\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Answer unknown question (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Question not found -> 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{poll_url}}/answers",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "answers"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{user_a_id}},\n  \"question_id\": 999999,\n  \"selected_option\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Answer with unknown user (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User not found -> 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{poll_url}}/answers",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "answers"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": 999999,\n  \"question_id\": {{question_id}},\n  \"selected_option\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update answer by id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Answer updated -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Now South America\", () => { pm.expect(body.selected_option).to.eql(3); pm.expect(body.selected_text).to.eql(\"South America\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{poll_url}}/answers/{{answer_id}}",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "answers",
+                "{{answer_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"selected_option\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update question that has answers (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Answered question is locked -> 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{poll_url}}/questions/{{question_id}}",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "questions",
+                "{{question_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Trying to change an answered question\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Second user (for statistics)",
+      "item": [
+        {
+          "name": "Create user B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User B created -> 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set(\"user_b_id\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{user_url}}/users",
+              "host": [
+                "{{user_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Yossi\",\n  \"last_name\": \"Cohen\",\n  \"email\": \"{{$randomEmail}}\",\n  \"age\": 41,\n  \"address\": \"Jerusalem\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Register user B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Register B -> 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{user_url}}/users/{{user_b_id}}/register",
+              "host": [
+                "{{user_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_b_id}}",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "User B answers same question",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"B answered -> 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{poll_url}}/answers",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "answers"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{user_b_id}},\n  \"question_id\": {{question_id}},\n  \"selected_option\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "User B answers a seeded question",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"B answered seeded question -> 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{poll_url}}/answers",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "answers"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{user_b_id}},\n  \"question_id\": {{seed_question_id}},\n  \"selected_option\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Statistics",
+      "item": [
+        {
+          "name": "Question -> count per option",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Option counts -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"4 options returned with text\", () => { pm.expect(body.options).to.have.lengthOf(4); pm.expect(body.options[2].text).to.eql(\"South America\"); });",
+                  "pm.test(\"2 users chose option 3, nobody chose the others\", () => { pm.expect(body.options[2].count).to.eql(2); pm.expect(body.options[0].count).to.eql(0); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{poll_url}}/stats/questions/{{question_id}}/options",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "stats",
+                "questions",
+                "{{question_id}}",
+                "options"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Question -> total answers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Question total -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"2 users answered\", () => pm.expect(body.total_answers).to.eql(2));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{poll_url}}/stats/questions/{{question_id}}/total",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "stats",
+                "questions",
+                "{{question_id}}",
+                "total"
+              ]
+            }
+          }
+        },
+        {
+          "name": "User -> answers to each question",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User answers -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"User A has 1 answer with question text and chosen text\", () => { pm.expect(body.answers).to.have.lengthOf(1); pm.expect(body.answers[0].selected_text).to.eql(\"South America\"); pm.expect(body.answers[0].question_title).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{poll_url}}/stats/users/{{user_a_id}}/answers",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "stats",
+                "users",
+                "{{user_a_id}}",
+                "answers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "User -> total answered",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User total -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"User B answered 2 questions\", () => pm.expect(body.total_answered).to.eql(2));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{poll_url}}/stats/users/{{user_b_id}}/total",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "stats",
+                "users",
+                "{{user_b_id}}",
+                "total"
+              ]
+            }
+          }
+        },
+        {
+          "name": "All questions with counts per option",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"All stats -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const q = body.find(x => x.question_id === Number(pm.collectionVariables.get(\"question_id\")));",
+                  "pm.test(\"Our question is included with its counts\", () => { pm.expect(q).to.exist; pm.expect(q.total_answers).to.eql(2); });",
+                  "pm.test(\"Every question has 4 options with counts\", () => body.forEach(x => pm.expect(x.options).to.have.lengthOf(4)));",
+                  "pm.test(\"Questions without answers are included (all zero)\", () => pm.expect(body.some(x => x.total_answers === 0)).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{poll_url}}/stats/questions",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "stats",
+                "questions"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Deletes and cascades",
+      "item": [
+        {
+          "name": "Delete answer by id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Answer deleted -> 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{poll_url}}/answers/{{answer_id}}",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "answers",
+                "{{answer_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "User A total after deleting answer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User total -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"0 answers left\", () => pm.expect(body.total_answered).to.eql(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{poll_url}}/stats/users/{{user_a_id}}/total",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "stats",
+                "users",
+                "{{user_a_id}}",
+                "total"
+              ]
+            }
+          }
+        },
+        {
+          "name": "User A answers again (allowed after delete)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Answered again -> 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{poll_url}}/answers",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "answers"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{user_a_id}},\n  \"question_id\": {{question_id}},\n  \"selected_option\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete user A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User deleted -> 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{user_url}}/users/{{user_a_id}}",
+              "host": [
+                "{{user_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_a_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "User A answers were deleted too",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User total -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Deleting a user deletes their answers\", () => pm.expect(body.total_answered).to.eql(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{poll_url}}/stats/users/{{user_a_id}}/total",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "stats",
+                "users",
+                "{{user_a_id}}",
+                "total"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get deleted user (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User gone -> 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{user_url}}/users/{{user_a_id}}",
+              "host": [
+                "{{user_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_a_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete question (has answers - allowed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Question deleted -> 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{poll_url}}/questions/{{question_id}}",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "questions",
+                "{{question_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get deleted question (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Question gone -> 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{poll_url}}/questions/{{question_id}}",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "questions",
+                "{{question_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "User B lost the answer to the deleted question",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User total -> 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Only the seeded-question answer is left\", () => pm.expect(body.total_answered).to.eql(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{poll_url}}/stats/users/{{user_b_id}}/total",
+              "host": [
+                "{{poll_url}}"
+              ],
+              "path": [
+                "stats",
+                "users",
+                "{{user_b_id}}",
+                "total"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cleanup - delete user B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"User B deleted -> 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{user_url}}/users/{{user_b_id}}",
+              "host": [
+                "{{user_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_b_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "user_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "poll_url",
+      "value": "http://localhost:8001"
+    },
+    {
+      "key": "user_a_id",
+      "value": ""
+    },
+    {
+      "key": "user_a_email",
+      "value": ""
+    },
+    {
+      "key": "user_b_id",
+      "value": ""
+    },
+    {
+      "key": "question_id",
+      "value": ""
+    },
+    {
+      "key": "seed_question_id",
+      "value": ""
+    },
+    {
+      "key": "answer_id",
+      "value": ""
+    }
+  ]
+}
