@@ -1,10 +1,7 @@
 from datetime import datetime, timezone
-
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import relationship
-
 from app.database import Base
-
 
 class Question(Base):
     __tablename__ = "questions"
@@ -16,7 +13,6 @@ class Question(Base):
     option_3 = Column(String(255), nullable=False)
     option_4 = Column(String(255), nullable=False)
 
-    # deleting a question deletes all of its answers
     answers = relationship(
         "Answer", back_populates="question", cascade="all, delete-orphan"
     )
@@ -42,3 +38,11 @@ class Answer(Base):
     )
 
     question = relationship("Question", back_populates="answers")
+
+    @property
+    def question_title(self) -> str:
+        return self.question.title
+
+    @property
+    def selected_text(self) -> str:
+        return self.question.option_text(self.selected_option)

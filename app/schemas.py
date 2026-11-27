@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import List, Optional
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -49,7 +48,9 @@ class AnswerResponse(BaseModel):
     id: int
     user_id: int
     question_id: int
+    question_title: str
     selected_option: int
+    selected_text: str
     answered_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
