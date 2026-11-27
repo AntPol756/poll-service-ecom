@@ -7,7 +7,14 @@ from app.controllers.answer_controller import router as answer_router
 from app.controllers.question_controller import router as question_router
 from app.controllers.stats_controller import router as stats_router
 from app.database import init_db
+from app.seed import seed_questions
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()          # create database + tables
+    seed_questions()   # add the default questions if there are none
+    yield
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
