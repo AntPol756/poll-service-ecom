@@ -45,6 +45,23 @@ uvicorn main:app --reload --port 8001
 
 The database and tables are created automatically on startup.
 
+## Default questions
+
+On the first start the service adds 10 example questions (see `app/seed.py`), for example:
+
+- *Between the following, what do you most love to do?* - Watch TV / Play the computer / Hanging out with friends / Travel the world
+- *Where is your preferred place to travel?* - USA / France / South America / Thailand
+
+They are only added when the `questions` table is empty, so restarting does not create duplicates.
+New questions are added with `POST /questions`.
+
+## Answering a question
+
+1. `GET /questions` - get the questions and their 4 options as text
+2. `POST /answers` with the chosen option number (1 = first option ... 4 = fourth option)
+
+The response also returns the question title and the chosen option as text.
+
 ## Endpoints
 
 ### Questions
@@ -79,3 +96,15 @@ The database and tables are created automatically on startup.
 - **Answer a question** -> Poll Service calls `GET /users/{id}` on the User Service to check the user exists and `is_registered` is true.
 - **Delete a user** -> User Service calls `DELETE /answers/user/{id}` on the Poll Service.
 - If the other service is down the request fails with **503** and nothing is changed.
+
+## Testing with Postman
+
+`postman/poll-system.postman_collection.json` tests every requirement of the project
+(user CRUD, register, answer rules, statistics, deletes and cascades - 39 requests).
+
+1. Start the system: `docker compose up --build`
+2. Postman -> **Import** -> select the file
+3. Collection **Poll System** -> **Run** -> run all requests in order
+
+All tests should pass. The collection uses random emails and creates its own question,
+so it can be run many times.

@@ -1,7 +1,5 @@
 from typing import Dict, List
-
 from sqlalchemy.orm import Session
-
 from app.models import Question
 from app.repositories.answer_repository import AnswerRepository
 from app.schemas import (
@@ -14,7 +12,6 @@ from app.schemas import (
 )
 from app.services.question_service import QuestionService
 
-
 class StatsService:
     def __init__(self, db: Session):
         self.answer_repository = AnswerRepository(db)
@@ -22,7 +19,6 @@ class StatsService:
 
     @staticmethod
     def _build_question_stats(question: Question, counts: Dict[int, int]) -> QuestionStats:
-        # options nobody picked are missing from GROUP BY, so default to 0
         options = [
             OptionCount(option=i, text=question.option_text(i), count=counts.get(i, 0))
             for i in range(1, 5)
@@ -35,7 +31,7 @@ class StatsService:
         )
 
     def question_option_counts(self, question_id: int) -> QuestionStats:
-        question = self.question_service.get_question(question_id)  # 404 if missing
+        question = self.question_service.get_question(question_id)
         counts = self.answer_repository.count_per_option(question_id)
         return self._build_question_stats(question, counts)
 
@@ -71,7 +67,7 @@ class StatsService:
 
     def all_questions_stats(self) -> List[QuestionStats]:
         questions = self.question_service.get_all_questions()
-        all_counts = self.answer_repository.count_per_option_all()  # one query, not N
+        all_counts = self.answer_repository.count_per_option_all()
         return [
             self._build_question_stats(
                 question,

@@ -3,8 +3,6 @@ from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
-# ---------- Questions ----------
-
 class QuestionCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=500)
     option_1: str = Field(..., min_length=1, max_length=255)
@@ -31,8 +29,6 @@ class QuestionResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-# ---------- Answers ----------
 
 class AnswerCreate(BaseModel):
     user_id: int = Field(..., gt=0)
@@ -61,7 +57,6 @@ class DeletedAnswersResponse(BaseModel):
     deleted_answers: int
 
 
-# ---------- Statistics ----------
 
 class OptionCount(BaseModel):
     option: int

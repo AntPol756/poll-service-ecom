@@ -1,17 +1,13 @@
 from typing import Dict, List, Optional, Tuple
-
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
-
 from app.models import Answer
 from app.schemas import AnswerCreate
-
 
 class AnswerRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    # ---------- basic CRUD ----------
 
     def get_by_id(self, answer_id: int) -> Optional[Answer]:
         return self.db.query(Answer).filter(Answer.id == answer_id).first()
@@ -48,7 +44,6 @@ class AnswerRepository:
     def rollback(self) -> None:
         self.db.rollback()
 
-    # ---------- queries for statistics ----------
 
     def count_by_question(self, question_id: int) -> int:
         return self.db.query(Answer).filter(Answer.question_id == question_id).count()
@@ -75,7 +70,7 @@ class AnswerRepository:
         return {option: count for option, count in rows}
 
     def count_per_option_all(self) -> Dict[Tuple[int, int], int]:
-        """One query for all questions: {(question_id, option): count}."""
+
         rows = (
             self.db.query(Answer.question_id, Answer.selected_option, func.count(Answer.id))
             .group_by(Answer.question_id, Answer.selected_option)

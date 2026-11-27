@@ -1,14 +1,11 @@
 from typing import List
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
 from app.database import get_db
 from app.schemas import QuestionStats, QuestionTotal, UserAnswers, UserTotal
 from app.services.stats_service import StatsService
 
 router = APIRouter(prefix="/stats", tags=["Statistics"])
-
 
 @router.get("/questions", response_model=List[QuestionStats])
 def all_questions_stats(db: Session = Depends(get_db)):

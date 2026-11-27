@@ -1,11 +1,8 @@
 import requests
 from fastapi import HTTPException, status
-
 from app.config import settings
 
-
 class UserClient:
-    """Talks to the User Service over its REST API."""
 
     def get_user(self, user_id: int) -> dict:
         try:

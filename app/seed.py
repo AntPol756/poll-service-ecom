@@ -76,7 +76,6 @@ DEFAULT_QUESTIONS = [
 
 
 def seed_questions() -> None:
-    """Insert the default questions only if the questions table is empty."""
     db = SessionLocal()
     try:
         if db.query(Question).count() > 0:

@@ -1,13 +1,11 @@
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-
 from app.clients.user_client import UserClient
 from app.models import Answer
 from app.repositories.answer_repository import AnswerRepository
 from app.repositories.question_repository import QuestionRepository
 from app.schemas import AnswerCreate, AnswerUpdate
-
 
 class AnswerService:
     def __init__(self, db: Session):
@@ -24,7 +22,7 @@ class AnswerService:
         return answer
 
     def answer_question(self, answer_data: AnswerCreate) -> Answer:
-        # cheap local check first, then the network call to the User Service
+
         if not self.question_repository.get_by_id(answer_data.question_id):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Question not found"
@@ -41,7 +39,6 @@ class AnswerService:
         try:
             return self.answer_repository.create(answer_data)
         except IntegrityError:
-            # two requests at the same time: the UNIQUE constraint catches it
             self.answer_repository.rollback()
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -58,5 +55,4 @@ class AnswerService:
         self.answer_repository.delete(answer)
 
     def delete_user_answers(self, user_id: int) -> int:
-        """Called by the User Service when a user is deleted."""
         return self.answer_repository.delete_by_user(user_id)

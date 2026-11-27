@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-
 from app.database import get_db
 from app.schemas import AnswerCreate, AnswerResponse, AnswerUpdate, DeletedAnswersResponse
 from app.services.answer_service import AnswerService
@@ -29,7 +28,6 @@ def delete_answer(answer_id: int, db: Session = Depends(get_db)):
     return None
 
 
-# internal endpoint - called by the User Service when a user is deleted
 @router.delete("/user/{user_id}", response_model=DeletedAnswersResponse)
 def delete_user_answers(user_id: int, db: Session = Depends(get_db)):
     deleted = AnswerService(db).delete_user_answers(user_id)

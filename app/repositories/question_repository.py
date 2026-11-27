@@ -1,10 +1,7 @@
 from typing import List, Optional
-
 from sqlalchemy.orm import Session
-
 from app.models import Question
 from app.schemas import QuestionCreate, QuestionUpdate
-
 
 class QuestionRepository:
     def __init__(self, db: Session):

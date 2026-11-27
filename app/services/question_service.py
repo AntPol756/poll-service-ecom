@@ -1,13 +1,10 @@
 from typing import List
-
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-
 from app.models import Question
 from app.repositories.answer_repository import AnswerRepository
 from app.repositories.question_repository import QuestionRepository
 from app.schemas import QuestionCreate, QuestionUpdate
-
 
 class QuestionService:
     def __init__(self, db: Session):

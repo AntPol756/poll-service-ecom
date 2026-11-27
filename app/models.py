@@ -28,7 +28,7 @@ class Answer(Base):
     )
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, nullable=False, index=True)  # lives in User Service -> no FK
+    user_id = Column(Integer, nullable=False, index=True)
     question_id = Column(
         Integer, ForeignKey("questions.id", ondelete="CASCADE"), nullable=False, index=True
     )
