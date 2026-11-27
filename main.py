@@ -1,7 +1,5 @@
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
-
 from app.config import settings
 from app.controllers.answer_controller import router as answer_router
 from app.controllers.question_controller import router as question_router
@@ -14,11 +12,6 @@ from app.seed import seed_questions
 async def lifespan(app: FastAPI):
     init_db()          # create database + tables
     seed_questions()   # add the default questions if there are none
-    yield
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    init_db()
     yield
 
 
